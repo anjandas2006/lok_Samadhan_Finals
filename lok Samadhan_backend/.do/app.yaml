@@ -1,0 +1,53 @@
+name: lok-samadhan-backend
+region: blr # Bangalore datacenter (ideal for India low latency) or nyc
+services:
+  - name: api
+    github:
+      branch: main
+      deploy_on_push: true
+    source_dir: /
+    build_command: npm install --production
+    run_command: npm start
+    http_port: 5000
+    instance_count: 1
+    instance_size_slug: basic-xxs # Cost-effective starting at $5/month
+    routes:
+      - path: /
+    health_check:
+      http_path: /api/health
+      initial_delay_seconds: 10
+      period_seconds: 15
+      timeout_seconds: 5
+      success_threshold: 1
+      failure_threshold: 3
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "5000"
+      - key: GEMINI_API_KEY
+        type: secret
+        description: "Google AI Studio API Key for Gemma/Gemini"
+      - key: GEMINI_MODEL
+        value: "gemini-2.0-flash"
+      - key: SUPABASE_URL
+        value: ""
+      - key: SUPABASE_ANON_KEY
+        type: secret
+        value: ""
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        type: secret
+        value: ""
+      - key: DATABASE_URL
+        type: secret
+        description: "Connection string if using DigitalOcean Managed PostgreSQL"
+        value: ""
+      - key: OSM_NOMINATIM_BASE_URL
+        value: "https://nominatim.openstreetmap.org"
+      - key: OSM_USER_AGENT
+        value: "LokSamadhan-CivicApp/1.0 (contact@lok-samadhan.gov.in)"
+      - key: JWT_SECRET
+        type: secret
+        value: "generate_random_secure_jwt_secret_for_production"
+      - key: CORS_ORIGIN
+        value: "*"

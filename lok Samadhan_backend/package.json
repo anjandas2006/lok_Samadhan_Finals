@@ -1,0 +1,42 @@
+{
+  "name": "lok-samadhan-backend",
+  "version": "1.0.0",
+  "description": "Enterprise Civic Grievance Redressal Backend for Lok Samadhan (Node.js, Express, Gemma/Gemini AI, Supabase/PostgreSQL, OpenStreetMap, DigitalOcean)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "node test/api_test.js",
+    "seed": "node src/scripts/seed.js"
+  },
+  "keywords": [
+    "lok-samadhan",
+    "civic-grievances",
+    "gemini-api",
+    "gemma",
+    "supabase",
+    "postgresql",
+    "openstreetmap",
+    "nominatim",
+    "digitalocean"
+  ],
+  "author": "Lok Samadhan Team",
+  "license": "MIT",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@supabase/supabase-js": "^2.49.1",
+    "axios": "^1.8.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "exif-parser": "^0.1.12",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.13.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

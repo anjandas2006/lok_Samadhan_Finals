@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lok Samadhan | Citizen Grievance Redressal Backend & Geo-AI Portal</title>
+  <meta name="description" content="Lok Samadhan Enterprise Civic Redressal Backend powered by Node.js, Express, Gemma/Gemini AI, Supabase PostgreSQL, and OpenStreetMap.">
+  
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet CSS for OpenStreetMap -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header / Navigation Bar -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="flag-stripe"></div>
+        <div class="brand-icon">
+          <i class="bi bi-shield-check"></i>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">Lok Samadhan <span class="brand-subtitle">लोक समाधान</span></div>
+          <div class="brand-tagline">AI Civic Grievance Redressal & Spatial Sentinel Engine</div>
+        </div>
+      </div>
+
+      <div class="system-status-badges">
+        <div class="badge-chip status-live" id="badge-server">
+          <span class="dot pulse"></span>
+          <span class="badge-label">Backend Online</span>
+        </div>
+        <div class="badge-chip" id="badge-ai">
+          <i class="bi bi-cpu"></i>
+          <span id="ai-model-tag">Gemma / Gemini 2.0</span>
+        </div>
+        <div class="badge-chip" id="badge-db">
+          <i class="bi bi-database"></i>
+          <span id="db-mode-tag">Supabase / Postgres</span>
+        </div>
+        <div class="badge-chip" id="badge-osm">
+          <i class="bi bi-geo-alt"></i>
+          <span>OpenStreetMap</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-secondary" id="btn-open-api-docs">
+          <i class="bi bi-code-slash"></i> API Explorer
+        </button>
+        <button class="btn btn-primary" id="btn-quick-lodge">
+          <i class="bi bi-plus-circle"></i> Lodge Complaint
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-content">
+    <!-- Quick Analytics Stats Row -->
+    <section class="stats-grid">
+      <div class="stat-card card-total">
+        <div class="stat-icon-wrapper">
+          <i class="bi bi-inbox-fill"></i>
+        </div>
+        <div class="stat-details">
+          <div class="stat-label">Total Grievances</div>
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-trend"><i class="bi bi-arrow-up-right"></i> Across all wards</div>
+        </div>
+      </div>
+
+      <div class="stat-card card-resolved">
+        <div class="stat-icon-wrapper">
+          <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <div class="stat-details">
+          <div class="stat-label">Resolved & Closed</div>
+          <div class="stat-value" id="stat-resolved">0</div>
+          <div class="stat-trend positive" id="stat-resolution-rate">0% Resolution Rate</div>
+        </div>
+      </div>
+
+      <div class="stat-card card-review">
+        <div class="stat-icon-wrapper">
+          <i class="bi bi-hourglass-split"></i>
+        </div>
+        <div class="stat-details">
+          <div class="stat-label">Active Under Review</div>
+          <div class="stat-value" id="stat-review">0</div>
+          <div class="stat-trend">Field Squad Dispatched</div>
+        </div>
+      </div>
+
+      <div class="stat-card card-breached">
+        <div class="stat-icon-wrapper">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
+        <div class="stat-details">
+          <div class="stat-label">SLA Breached / Escalated</div>
+          <div class="stat-value text-danger" id="stat-escalated">0</div>
+          <div class="stat-trend danger">Urgent Nodal Review</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Two Column Layout: OpenStreetMap & AI Classifier -->
+    <div class="dashboard-columns">
+      <!-- Left Column: OpenStreetMap Geo-Tracker -->
+      <section class="dashboard-card map-section">
+        <div class="card-header">
+          <div class="card-title-group">
+            <i class="bi bi-map-fill card-icon"></i>
+            <div>
+              <h2 class="card-title">OpenStreetMap Grievance Geo-Spatial Sentinel</h2>
+              <p class="card-subtitle">Real-time GPS complaint clustering & reverse geocoded ward visualization</p>
+            </div>
+          </div>
+          <div class="map-controls">
+            <button class="btn btn-sm btn-ghost active" id="btn-filter-all-markers">All Markers</button>
+            <button class="btn btn-sm btn-ghost" id="btn-filter-high-urgency"><span class="badge-dot red"></span> High Urgency</button>
+            <button class="btn btn-sm btn-secondary" id="btn-detect-hotspots">
+              <i class="bi bi-bullseye"></i> Cluster Hotspots
+            </button>
+          </div>
+        </div>
+        <div class="map-container-wrapper">
+          <div id="osm-map" class="osm-map"></div>
+          <div class="map-legend">
+            <div class="legend-item"><span class="legend-color high"></span> High Urgency</div>
+            <div class="legend-item"><span class="legend-color medium"></span> Medium</div>
+            <div class="legend-item"><span class="legend-color resolved"></span> Resolved</div>
+          </div>
+        </div>
+        <div class="map-footer">
+          <div class="osm-attribution-tag">
+            <i class="bi bi-info-circle"></i> Powered by <strong>OpenStreetMap Nominatim</strong> & Leaflet. Tile data &copy; <a href="https://openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>
+          </div>
+          <div id="active-hotspot-summary" class="hotspot-summary">
+            Click markers to view audit trail & SLA timer
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Gemma 4 / Gemini AI Playground -->
+      <section class="dashboard-card ai-section">
+        <div class="card-header">
+          <div class="card-title-group">
+            <i class="bi bi-stars card-icon text-accent"></i>
+            <div>
+              <h2 class="card-title">Gemma / Gemini AI Redressal Engine</h2>
+              <p class="card-subtitle">Dialect NLP, department auto-routing, and SLA prediction</p>
+            </div>
+          </div>
+          <span class="ai-badge">Google GenAI Active</span>
+        </div>
+
+        <div class="ai-playground">
+          <label class="input-label" for="ai-input-text">
+            <span>Speak or Type Civic Grievance (Gujarati, Hindi, Bhojpuri, English):</span>
+          </label>
+          <div class="textarea-wrapper">
+            <textarea id="ai-input-text" rows="3" placeholder="e.g. અમારા ગામમાં પીવાના પાણીની મુખ્ય પાઇપલાઇન તૂટી ગઈ છે, ૪ દિવસથી પાણી નથી આવતું..."></textarea>
+            <button class="btn-sample-chip" id="btn-mic-toggle" title="Voice Input Simulation">
+              <i class="bi bi-mic-fill"></i>
+            </button>
+          </div>
+
+          <div class="sample-chips-row">
+            <span class="chips-label">Try Samples:</span>
+            <button class="chip" data-sample="gujarati-water">💧 Gujarati (પાણીની પાઇપ)</button>
+            <button class="chip" data-sample="bhojpuri-handpump">🚰 Bhojpuri (चापाकल बिगड़ल)</button>
+            <button class="chip" data-sample="hindi-transformer">⚡ Hindi (11KV ट्रांसफार्मर)</button>
+            <button class="chip" data-sample="english-pothole">🛣️ English (Pothole Hazard)</button>
+          </div>
+
+          <div class="ai-actions-row">
+            <button class="btn btn-primary w-100" id="btn-classify-ai">
+              <i class="bi bi-lightning-charge-fill"></i> Classify with Gemma AI & Geocode
+            </button>
+          </div>
+
+          <!-- AI Result Output Card -->
+          <div class="ai-result-card" id="ai-result-card" style="display: none;">
+            <div class="result-header">
+              <div class="result-dept-tag" id="result-dept-name">Drinking Water (PHED)</div>
+              <div class="result-urgency-badge" id="result-urgency-tag">HIGH URGENCY</div>
+            </div>
+
+            <div class="result-grid">
+              <div class="result-field">
+                <span class="field-name">Confidence Score:</span>
+                <span class="field-val" id="result-confidence">97%</span>
+              </div>
+              <div class="result-field">
+                <span class="field-name">Detected Dialect:</span>
+                <span class="field-val" id="result-dialect">Gujarati</span>
+              </div>
+              <div class="result-field">
+                <span class="field-name">SLA Window:</span>
+                <span class="field-val" id="result-sla">24 Hours</span>
+              </div>
+              <div class="result-field">
+                <span class="field-name">OSM Location:</span>
+                <span class="field-val" id="result-location">Sanand, Ahmedabad</span>
+              </div>
+            </div>
+
+            <div class="result-translation-box">
+              <div class="box-label"><i class="bi bi-translate"></i> English Translation:</div>
+              <p class="translated-text" id="result-translated">Main drinking water pipeline ruptured...</p>
+            </div>
+
+            <div class="result-actions">
+              <button class="btn btn-success btn-sm" id="btn-confirm-lodge-ai">
+                <i class="bi bi-check2-circle"></i> Confirm & Save to Database
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Grievances Registry Table & Triage Section -->
+    <section class="dashboard-card table-section">
+      <div class="card-header table-header-flex">
+        <div class="card-title-group">
+          <i class="bi bi-table card-icon"></i>
+          <div>
+            <h2 class="card-title">Live Grievance Triage Registry</h2>
+            <p class="card-subtitle">Active lifecycle tickets, officer assignment, and SLA countdowns</p>
+          </div>
+        </div>
+
+        <div class="table-filters-group">
+          <div class="search-input-wrapper">
+            <i class="bi bi-search"></i>
+            <input type="text" id="filter-search" placeholder="Search by ID, Citizen, Issue, Ward...">
+          </div>
+
+          <select id="filter-department" class="filter-select">
+            <option value="">All Departments</option>
+            <option value="waterSupply">Water Supply (PHED)</option>
+            <option value="electricity">Electricity (DISCOM)</option>
+            <option value="roadsInfrastructure">Roads (PWD)</option>
+            <option value="sanitationHealth">Sanitation & Health</option>
+            <option value="pdsRation">PDS Ration</option>
+            <option value="pensionsWelfare">Pensions & Welfare</option>
+            <option value="policeLawOrder">Police & Safety</option>
+            <option value="generalPanchayat">Panchayat</option>
+          </select>
+
+          <select id="filter-status" class="filter-select">
+            <option value="">All Statuses</option>
+            <option value="received">Received</option>
+            <option value="underReview">Under Investigation</option>
+            <option value="inProgress">In Progress</option>
+            <option value="resolved">Resolved</option>
+            <option value="escalated">SLA Breached</option>
+            <option value="hitlReview">HITL Review</option>
+          </select>
+
+          <button class="btn btn-secondary btn-sm" id="btn-refresh-table" title="Refresh Data">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Grievances Table -->
+      <div class="table-responsive">
+        <table class="grievances-table" id="grievances-table">
+          <thead>
+            <tr>
+              <th>Complaint ID</th>
+              <th>Citizen & Dialect</th>
+              <th>Department & Issue</th>
+              <th>Location (Ward / Dist)</th>
+              <th>Urgency</th>
+              <th>Status</th>
+              <th>SLA Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <tr>
+              <td colspan="8" class="text-center py-4">Loading active grievances...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal: Lodge New Grievance -->
+  <div class="modal-backdrop" id="lodge-modal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="bi bi-shield-plus text-primary"></i> Lodge Citizen Grievance</h3>
+        <button class="btn-close-modal" id="btn-close-lodge-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="lodge-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="form-citizen-name">Citizen Full Name *</label>
+              <input type="text" id="form-citizen-name" required value="Sanjay Kumar">
+            </div>
+            <div class="form-group">
+              <label for="form-citizen-phone">Mobile Number *</label>
+              <input type="text" id="form-citizen-phone" required value="+91 98765 43210">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="form-speech-text">Spoken or Typed Complaint Description *</label>
+            <textarea id="form-speech-text" rows="3" required placeholder="Describe problem in any dialect (Hindi, Gujarati, Bhojpuri, etc.)"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="form-category">Department (Optional - Auto routed by Gemma AI)</label>
+              <select id="form-category">
+                <option value="">-- Let AI Auto-Route --</option>
+                <option value="waterSupply">Water Supply (PHED)</option>
+                <option value="electricity">Electricity (DISCOM)</option>
+                <option value="roadsInfrastructure">Roads & Bridges (PWD)</option>
+                <option value="sanitationHealth">Public Health & Sanitation</option>
+                <option value="pdsRation">Food & Civil Supplies (Ration)</option>
+                <option value="pensionsWelfare">Social Welfare & Pensions</option>
+                <option value="policeLawOrder">Police & Safety</option>
+                <option value="generalPanchayat">Panchayat & Rural</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="form-urgency">Urgency</label>
+              <select id="form-urgency">
+                <option value="high">High Urgency</option>
+                <option value="medium" selected>Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="form-lat">Latitude (GPS)</label>
+              <input type="number" step="any" id="form-lat" placeholder="Capture via GPS button or enter">
+            </div>
+            <div class="form-group">
+              <label for="form-lon">Longitude (GPS)</label>
+              <input type="number" step="any" id="form-lon" placeholder="Capture via GPS button or enter">
+            </div>
+          </div>
+          <div class="geo-detect-row">
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-detect-gps">
+              <i class="bi bi-geo"></i> Capture Device GPS Location
+            </button>
+            <span class="osm-hint" id="osm-detected-addr">Tap to acquire live device GPS fix</span>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-ghost" id="btn-cancel-lodge">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btn-submit-lodge">
+              <i class="bi bi-send-check"></i> Submit to Lok Samadhan
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Grievance Details & Audit Log -->
+  <div class="modal-backdrop" id="detail-modal" style="display: none;">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <div class="modal-title-with-badge">
+          <h3 id="modal-ticket-id">LS-2026-XXXXX</h3>
+          <span class="status-badge" id="modal-status-badge">Received</span>
+        </div>
+        <button class="btn-close-modal" id="btn-close-detail-modal">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-detail-body">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: API Explorer & Curl Generator -->
+  <div class="modal-backdrop" id="api-modal" style="display: none;">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3><i class="bi bi-code-slash text-accent"></i> Lok Samadhan REST API Documentation</h3>
+        <button class="btn-close-modal" id="btn-close-api-modal">&times;</button>
+      </div>
+      <div class="modal-body api-docs-body">
+        <p class="text-muted">Directly testable REST endpoints for Flutter app, mobile gateways, and DigitalOcean production.</p>
+        
+        <div class="api-endpoint-list">
+          <div class="api-endpoint-card">
+            <div class="endpoint-header">
+              <span class="http-method post">POST</span>
+              <code>/api/ai/classify</code>
+              <span class="endpoint-desc">Classify speech text using Gemma 4 / Gemini API</span>
+            </div>
+            <pre class="curl-code"><code>curl -X POST http://localhost:5000/api/ai/classify \
+  -H "Content-Type: application/json" \
+  -d '{"text": "અમારા ગામમાં પીવાના પાણીની લાઈન તૂટી ગઈ છે"}'</code></pre>
+          </div>
+
+          <div class="api-endpoint-card">
+            <div class="endpoint-header">
+              <span class="http-method get">GET</span>
+              <code>/api/grievances</code>
+              <span class="endpoint-desc">Get grievances with status, department, and district filters</span>
+            </div>
+            <pre class="curl-code"><code>curl http://localhost:5000/api/grievances?status=underReview</code></pre>
+          </div>
+
+          <div class="api-endpoint-card">
+            <div class="endpoint-header">
+              <span class="http-method get">GET</span>
+              <code>/api/maps/reverse-geocode</code>
+              <span class="endpoint-desc">OpenStreetMap Nominatim reverse geocoder</span>
+            </div>
+            <pre class="curl-code"><code>curl "http://localhost:5000/api/maps/reverse-geocode?lat=22.9868&lng=72.3812"</code></pre>
+          </div>
+
+          <div class="api-endpoint-card">
+            <div class="endpoint-header">
+              <span class="http-method get">GET</span>
+              <code>/api/grievances/geojson</code>
+              <span class="endpoint-desc">OpenStreetMap Leaflet GeoJSON layer endpoint</span>
+            </div>
+            <pre class="curl-code"><code>curl http://localhost:5000/api/grievances/geojson</code></pre>
+          </div>
+
+          <div class="api-endpoint-card">
+            <div class="endpoint-header">
+              <span class="http-method patch">PATCH</span>
+              <code>/api/grievances/:id/status</code>
+              <span class="endpoint-desc">Update ticket status (resolved, inProgress, etc.) with audit log</span>
+            </div>
+            <pre class="curl-code"><code>curl -X PATCH http://localhost:5000/api/grievances/LS-2026-72418/status \
+  -H "Content-Type: application/json" \
+  -d '{"status": "resolved", "note": "Pipeline valve repaired by Junior Engineer"}'</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Leaflet JS for OpenStreetMap -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <script src="app.js"></script>
+</body>
+</html>

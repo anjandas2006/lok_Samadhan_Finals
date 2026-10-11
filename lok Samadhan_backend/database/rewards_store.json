@@ -2,31 +2,31 @@
   "rewardBalances": {
     "default_citizen": {
       "userId": "default_citizen",
-      "balance": 24,
-      "totalEarned": 24,
+      "balance": 23,
+      "totalEarned": 23,
       "totalRedeemed": 0,
-      "updatedAt": "2026-10-11T06:02:09.494Z"
+      "updatedAt": "2026-10-11T05:16:08.485Z"
     },
     "test_citizen_1791611909214": {
       "userId": "test_citizen_1791611909214",
       "balance": 2,
       "totalEarned": 2,
       "totalRedeemed": 0,
-      "updatedAt": "2026-10-11T06:02:09.494Z"
+      "updatedAt": "2026-10-11T05:16:08.485Z"
     },
     "test_citizen_1791612615482": {
       "userId": "test_citizen_1791612615482",
       "balance": 2,
       "totalEarned": 2,
       "totalRedeemed": 0,
-      "updatedAt": "2026-10-11T06:02:09.494Z"
+      "updatedAt": "2026-10-11T05:16:08.485Z"
     },
     "test_citizen_1791645814651": {
       "userId": "test_citizen_1791645814651",
       "balance": 2,
       "totalEarned": 2,
       "totalRedeemed": 0,
-      "updatedAt": "2026-10-11T06:02:09.494Z"
+      "updatedAt": "2026-10-11T05:16:08.485Z"
     }
   },
   "complaintRewards": [
@@ -232,27 +232,10 @@
       "complaintId": "LS-2026-61613",
       "coinsAwarded": 1,
       "awardedAt": "2026-10-10T20:28:17.481Z"
-    },
-    {
-      "id": "CWD-1791696978353-1926",
-      "userId": "default_citizen",
-      "complaintId": "LS-2026-47540",
-      "coinsAwarded": 1,
-      "awardedAt": "2026-10-11T05:36:18.353Z"
     }
   ],
   "rewardRedemptions": [],
   "gcTransactions": [
-    {
-      "id": "TXN-EARN-1791696978353-7044",
-      "userId": "default_citizen",
-      "type": "earned",
-      "amount": 1,
-      "description": "Eligible Civic Complaint #LS-2026-47540",
-      "referenceId": "LS-2026-47540",
-      "balanceAfter": 24,
-      "createdAt": "2026-10-11T05:36:18.353Z"
-    },
     {
       "id": "TXN-EARN-1791664097481-4892",
       "userId": "default_citizen",
